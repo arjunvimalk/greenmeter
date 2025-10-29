@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <title>Green Meter App — Enhanced Carbon Dashboard</title>
+  <title>Green Meter — Emissions Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
@@ -10,69 +10,61 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     :root {
-      /* Dark theme */
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --accent: #16a34a;
+      --accent2: #2563eb;
+      --border: #e2e8f0;
+      --chip: #f1f5f9;
+    }
+    [data-theme="dark"] {
       --bg: #0f172a;
-      --panel: #111827;
-      --muted: #9ca3af;
+      --panel: #101827;
       --text: #e5e7eb;
+      --muted: #9ca3af;
       --accent: #22c55e;
       --accent2: #60a5fa;
-      --warn: #f97316;
-      --danger: #ef4444;
       --border: #1f2937;
       --chip: #0b1220;
     }
-    [data-theme="light"] {
-      --bg: #f8fafc;
-      --panel: #ffffff;
-      --muted: #6b7280;
-      --text: #111827;
-      --accent: #16a34a;
-      --accent2: #2563eb;
-      --warn: #ea580c;
-      --danger: #dc2626;
-      --border: #e5e7eb;
-      --chip: #f1f5f9;
-    }
     * { box-sizing: border-box; }
     body {
-      margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
       background: var(--bg);
       color: var(--text);
     }
     header {
       position: sticky; top: 0; z-index: 10;
-      padding: 12px 16px; border-bottom: 1px solid var(--border); display:flex; align-items:center; gap:12px; background: var(--panel);
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
     }
     header h1 { margin: 0; font-size: 18px; font-weight: 700; }
-    .spacer { flex: 1; }
-    .actions { display:flex; gap:8px; align-items:center; }
     .btn {
-      padding: 8px 12px; border:1px solid var(--border); background: var(--chip); color: var(--text);
+      padding: 8px 12px; border: 1px solid var(--border); background: var(--chip); color: var(--text);
       border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;
     }
-    .btn.primary { border-color: var(--accent); color: #0a0f1a; background: var(--accent); }
-    .btn.warn { border-color: var(--warn); background: var(--warn); color: #fff; }
-    .btn.ghost { background: transparent; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .switch {
-      display:inline-flex; align-items:center; gap:8px; font-size:12px; color: var(--muted);
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .select { padding: 8px 12px; border: 1px solid var(--border); background: var(--chip); color: var(--text); border-radius: 8px; }
+    main {
+      display: grid; grid-template-columns: 360px 1fr 1fr; gap: 12px; padding: 12px;
     }
-    main { display: grid; grid-template-columns: 360px 1fr 1fr; gap: 12px; padding: 12px; }
     .panel {
-      background: var(--panel); border:1px solid var(--border); border-radius: 12px; overflow: hidden;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
     }
     .panel h2 {
       margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 700;
     }
     .content { padding: 12px; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .input-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
-    .input-row label { font-size: 12px; color: var(--muted); display:flex; align-items:center; gap:6px; }
-    .hint { font-size: 11px; color: var(--muted); }
-    .input-row input[type="number"] {
-      width: 160px; padding: 6px 8px; border-radius:8px; border:1px solid var(--border);
-      background: var(--chip); color: var(--text); text-align:right;
+    .input-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .input-row label { font-size: 12px; color: var(--muted); }
+    .input-row input[type="number"], .input-row input[type="text"] {
+      width: 160px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--chip); color: var(--text); text-align: right;
     }
     .slider-row { margin: 8px 0; }
     .slider-row label { display:flex; justify-content:space-between; font-size:12px; color: var(--muted); }
@@ -84,48 +76,38 @@
     .metric { background: var(--chip); border:1px solid var(--border); border-radius:10px; padding:8px; }
     .metric .label { font-size:12px; color: var(--muted); }
     .metric .value { font-size:16px; font-weight:700; }
-    .tag { display:inline-block; padding:4px 6px; border-radius:6px; font-weight:700; font-size:12px; }
-    .tag.good { background: rgba(34,197,94,0.15); border:1px solid var(--accent); color: var(--accent); }
-    .tag.bad { background: rgba(239,68,68,0.15); border:1px solid var(--danger); color: var(--danger); }
     canvas { background: var(--chip); border:1px solid var(--border); border-radius:10px; }
     .hr { height:1px; background: var(--border); margin: 10px 0; }
-    .warning { margin-top:8px; color: var(--warn); font-size:12px; }
+    .hint { font-size:11px; color: var(--muted); }
     .chips { display:flex; gap:8px; flex-wrap:wrap; }
     .chip { padding:6px 8px; background: var(--chip); border:1px solid var(--border); border-radius:999px; font-size:12px; }
-    .insights { display:grid; gap:8px; }
-    .insight { background: var(--chip); border:1px solid var(--border); border-radius:10px; padding:8px; font-size:12px; }
-    .scenario-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-    .scenario { padding:6px 8px; border:1px solid var(--border); background: var(--chip); border-radius:8px; font-size:12px; display:flex; align-items:center; gap:6px; }
-    .scenario .name { font-weight:700; }
-    .modal {
-      position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.45);
-    }
-    .modal .dialog { width: 520px; max-width:90vw; background: var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-    .dialog h3 { margin:0; padding:10px 12px; border-bottom:1px solid var(--border); font-size:16px; }
-    .dialog .body { padding:12px; font-size:13px; }
-    .dialog .footer { padding:12px; display:flex; gap:8px; justify-content:flex-end; border-top:1px solid var(--border); }
+    .warning { margin-top:8px; color: #b45309; font-size:12px; }
+    /* Simple Mode: hide advanced-only elements and soften language */
+    .simple-mode .advanced-only { display: none !important; }
+    .simple-mode main { grid-template-columns: 320px 1fr 1fr; }
+    .simple-mode .panel h2 { font-weight: 600; }
+    .simple-mode .hint { display: none; }
+    .simple-mode .tech-label { display: none; }
+    .simple-mode .friendly-label { display: inline; }
+    .friendly-label { display: none; }
+    /* Minimal look adjustments */
+    .soft { color: var(--muted); font-size: 12px; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Green Meter App — Enhanced Carbon Dashboard</h1>
-    <div class="chips">
-      <span class="chip">Single-page</span>
-      <span class="chip">Scenario compare</span>
-      <span class="chip">5-year projection</span>
-    </div>
-    <div class="spacer"></div>
-    <div class="switch">
-      <label for="themeToggle">Theme</label>
-      <select id="themeToggle" class="btn">
-        <option value="dark" selected>Dark</option>
-        <option value="light">Light</option>
+    <h1>Green Meter — Emissions Dashboard</h1>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button id="modeToggle" class="btn">Switch to Simple Mode</button>
+      <select id="themeToggle" class="select">
+        <option value="light" selected>Light</option>
+        <option value="dark">Dark</option>
       </select>
     </div>
-    <div class="actions">
-      <button id="btnExport" class="btn">Screenshot</button>
-      <button id="btnExportCSV" class="btn ghost">CSV</button>
-      <button id="btnExportJSON" class="btn ghost">JSON</button>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button id="btnExport" class="btn">Export screenshot</button>
+      <button id="btnExportCSV" class="btn advanced-only">CSV</button>
+      <button id="btnExportJSON" class="btn advanced-only">JSON</button>
       <button id="btnCalculateTop" class="btn primary">Calculate</button>
     </div>
   </header>
@@ -133,58 +115,58 @@
   <main id="dashboard">
     <!-- Left: Inputs & Controls -->
     <section class="panel">
-      <h2>Inputs — Activity data (per year)</h2>
+      <h2>Your activities</h2>
       <div class="content">
         <div class="grid2">
           <div>
             <div class="input-row">
-              <label for="Cars_km">Cars_km <span class="hint" title="Total annual km driven by company cars">?</span></label>
+              <label><span class="tech-label">Cars_km</span><span class="friendly-label">Car travel (km/year)</span></label>
               <input id="Cars_km" type="number" min="0" step="1" value="250000" />
             </div>
             <div class="input-row">
-              <label for="Trucks_km">Trucks_km <span class="hint" title="Annual km for freight trucks">?</span></label>
+              <label><span class="tech-label">Trucks_km</span><span class="friendly-label">Truck travel (km/year)</span></label>
               <input id="Trucks_km" type="number" min="0" step="1" value="180000" />
             </div>
             <div class="input-row">
-              <label for="Buses_km">Buses_km <span class="hint" title="Annual km for buses/shuttles">?</span></label>
+              <label><span class="tech-label">Buses_km</span><span class="friendly-label">Bus/shuttle travel (km/year)</span></label>
               <input id="Buses_km" type="number" min="0" step="1" value="90000" />
             </div>
             <div class="input-row">
-              <label for="Forklifts_hr">Forklifts_hr <span class="hint" title="Total operating hours per year">?</span></label>
+              <label><span class="tech-label">Forklifts_hr</span><span class="friendly-label">Forklift hours (per year)</span></label>
               <input id="Forklifts_hr" type="number" min="0" step="1" value="4000" />
             </div>
             <div class="input-row">
-              <label for="Planes_hr">Planes_hr <span class="hint" title="Cargo plane flight hours per year">?</span></label>
+              <label><span class="tech-label">Planes_hr</span><span class="friendly-label">Cargo flight hours (per year)</span></label>
               <input id="Planes_hr" type="number" min="0" step="1" value="120" />
             </div>
           </div>
           <div>
             <div class="input-row">
-              <label for="Lighting_kWh">Lighting_kWh <span class="hint" title="Office lighting electricity">?</span></label>
+              <label><span class="tech-label">Lighting_kWh</span><span class="friendly-label">Office lighting (kWh)</span></label>
               <input id="Lighting_kWh" type="number" min="0" step="1" value="300000" />
             </div>
             <div class="input-row">
-              <label for="Heating_kWhth">Heating_kWhth <span class="hint" title="Thermal energy for heating">?</span></label>
+              <label><span class="tech-label">Heating_kWhth</span><span class="friendly-label">Heating energy (kWh thermal)</span></label>
               <input id="Heating_kWhth" type="number" min="0" step="1" value="150000" />
             </div>
             <div class="input-row">
-              <label for="Cooling_kWh">Cooling_kWh <span class="hint" title="A/C electricity use">?</span></label>
+              <label><span class="tech-label">Cooling_kWh</span><span class="friendly-label">Cooling/Air conditioning (kWh)</span></label>
               <input id="Cooling_kWh" type="number" min="0" step="1" value="280000" />
             </div>
             <div class="input-row">
-              <label for="Computing_kWh">Computing_kWh <span class="hint" title="IT/data center electricity">?</span></label>
+              <label><span class="tech-label">Computing_kWh</span><span class="friendly-label">IT & data (kWh)</span></label>
               <input id="Computing_kWh" type="number" min="0" step="1" value="220000" />
             </div>
-            <div class="input-row">
-              <label for="Sub1">Sub1 (tons) <span class="hint" title="Subcontractor emissions in tons">?</span></label>
+            <div class="input-row advanced-only">
+              <label>Sub1 (tons)</label>
               <input id="Sub1" type="number" min="0" step="0.1" value="80" />
             </div>
-            <div class="input-row">
-              <label for="Sub2">Sub2 (tons)</label>
+            <div class="input-row advanced-only">
+              <label>Sub2 (tons)</label>
               <input id="Sub2" type="number" min="0" step="0.1" value="40" />
             </div>
-            <div class="input-row">
-              <label for="Sub3">Sub3 (tons)</label>
+            <div class="input-row advanced-only">
+              <label>Sub3 (tons)</label>
               <input id="Sub3" type="number" min="0" step="0.1" value="30" />
             </div>
           </div>
@@ -193,23 +175,24 @@
         <div class="hr"></div>
 
         <!-- Sliders -->
+        <h2 style="border:none; padding:0; margin:0 0 6px 0; font-size:14px;">Improvements</h2>
         <div class="slider-row">
-          <label>EV Share (%) <span id="EVShareLabel">30%</span></label>
+          <label>EV share <span id="EVShareLabel">30%</span></label>
           <input id="EV_share" type="range" min="0" max="100" step="1" value="30" />
         </div>
         <div class="slider-row">
-          <label>KM Reduction (%) <span id="KMRedLabel">10%</span></label>
+          <label>Travel reduction <span id="KMRedLabel">10%</span></label>
           <input id="KM_reduction" type="range" min="0" max="100" step="1" value="10" />
         </div>
         <div class="slider-row">
-          <label>Plane Load Factor (%) <span id="LoadFactorLabel">60%</span></label>
+          <label>Cargo load factor <span id="LoadFactorLabel">60%</span></label>
           <input id="LoadFactor" type="range" min="0" max="100" step="1" value="60" />
         </div>
 
         <div class="hr"></div>
 
-        <!-- Projection + scenario controls -->
-        <div class="grid2">
+        <!-- Scenario name (Advanced), projection (Advanced) -->
+        <div class="grid2 advanced-only">
           <div>
             <label style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px;">
               <input id="projectionToggle" type="checkbox" />
@@ -227,76 +210,76 @@
             </div>
             <div style="display:flex; gap:8px;">
               <button id="btnSaveScenario" class="btn">Save scenario</button>
-              <button id="btnClearScenarios" class="btn ghost">Clear scenarios</button>
+              <button id="btnClearScenarios" class="btn">Clear scenarios</button>
             </div>
           </div>
         </div>
 
         <!-- Buttons -->
         <div style="display:flex; gap:8px; margin-top:10px;">
-          <button id="btnSample" class="btn">Load sample data</button>
-          <button id="btnReset" class="btn warn">Reset</button>
+          <button id="btnSample" class="btn">Load sample</button>
+          <button id="btnReset" class="btn">Reset</button>
           <button id="btnCalculate" class="btn primary">Calculate</button>
         </div>
 
+        <p class="soft">Tip: Set improvements and press Calculate to update the charts.</p>
         <div id="warning" class="warning" style="display:none;"></div>
-        <div id="badges" class="chips" style="margin-top:8px;"></div>
-        <div class="scenario-list" id="scenarioList"></div>
+        <div id="badges" class="chips advanced-only" style="margin-top:8px;"></div>
+        <div class="scenario-list advanced-only" id="scenarioList"></div>
       </div>
     </section>
 
-    <!-- Center: Pie chart + insights -->
+    <!-- Center: Pie chart + single headline insight in Simple Mode -->
     <section class="panel">
-      <h2>Emission share — optimized</h2>
+      <h2>Share by category</h2>
       <div class="content">
         <canvas id="pieChart" height="260"></canvas>
         <div class="legend" id="legend"></div>
         <div class="hr"></div>
-        <h3 style="margin:0 0 6px 0; font-size:14px;">Insights</h3>
-        <div class="insights" id="insights"></div>
-        <p class="hint">Click a pie slice for drill-down details.</p>
+        <div id="headlineInsight" class="soft">Your optimized plan reduces emissions compared to baseline.</div>
+        <div class="hr advanced-only"></div>
+        <h3 class="advanced-only" style="margin:0 0 6px 0; font-size:14px;">Insights</h3>
+        <div class="insights advanced-only" id="insights"></div>
       </div>
     </section>
 
-    <!-- Right: Bar chart (baseline vs optimized + scenario compare) -->
+    <!-- Right: Bar chart (baseline vs optimized + scenario compare in Advanced) -->
     <section class="panel">
-      <h2>Total emissions — baseline vs optimized</h2>
+      <h2>Totals</h2>
       <div class="content">
         <canvas id="barChart" height="260"></canvas>
         <div class="metrics">
           <div class="metric">
-            <div class="label">Baseline total (tons)</div>
+            <div class="label">Baseline emissions (tons)</div>
             <div id="baselineTotal" class="value">—</div>
           </div>
           <div class="metric">
-            <div class="label">Optimized total (tons)</div>
+            <div class="label">Optimized emissions (tons)</div>
             <div id="optimizedTotal" class="value">—</div>
           </div>
           <div class="metric">
-            <div class="label">% reduction</div>
-            <div><span id="reductionTag" class="tag">—</span></div>
+            <div class="label">Reduction</div>
+            <div id="reductionTag" class="value">—</div>
           </div>
         </div>
-        <div class="hr"></div>
-        <h3 style="margin:0 0 6px 0; font-size:14px;">Scenario compare</h3>
-        <canvas id="scenarioChart" height="220"></canvas>
+        <div class="hr advanced-only"></div>
+        <h3 class="advanced-only" style="margin:0 0 6px 0; font-size:14px;">Scenario compare</h3>
+        <canvas id="scenarioChart" class="advanced-only" height="220"></canvas>
       </div>
     </section>
   </main>
 
-  <footer class="panel">
+  <footer class="panel advanced-only">
     <h2>Assumptions & formulas</h2>
     <div class="content">
-      <div class="assump">
-        <ul>
-          <li>All category emissions computed in kg CO₂e, then converted to tons (÷ 1000).</li>
-          <li>Baseline uses EV_share=0%, KM_Reduction=0%, Plane LoadFactor = current slider value at time of baseline calculation.</li>
-          <li>Empty fields treated as zero. Negative values prevented. LoadFactor capped 0–100.</li>
-          <li>Displayed tons rounded to 1 decimal place.</li>
-          <li>Projection applies uniform annual % change to activity inputs for 5 years; sliders apply in optimized scenario.</li>
-        </ul>
-        <div class="hr"></div>
-        <code style="font-size:12px; white-space:pre-line;">
+      <ul class="soft">
+        <li>Emissions computed in kg CO₂e, then converted to tons (÷ 1000).</li>
+        <li>Baseline uses EV_share=0%, KM_Reduction=0%, LoadFactor = current slider value.</li>
+        <li>Empty fields treated as zero. Negative values prevented. LoadFactor capped 0–100.</li>
+        <li>Displayed tons rounded to 1 decimal place.</li>
+      </ul>
+      <div class="hr"></div>
+      <code style="font-size:12px; white-space:pre-line; display:block; background:var(--chip); border:1px solid var(--border); border-radius:8px; padding:8px;">
 Cars:
 cars_kg = Cars_km × 0.18 × (1 − 0.7 * EV_share/100) × (1 − KM_Reduction/100)
 Cars_tons = cars_kg / 1000
@@ -329,24 +312,12 @@ Subcontractors:
 Subs_tons = Sub1 + Sub2 + Sub3
 
 Totals:
-Baseline_total_tons = sum(all category tons using baseline sliders default or EV=0, KMRed=0, LoadFactor=baseline)
+Baseline_total_tons = sum(all category tons using EV=0, KMRed=0, LoadFactor=baseline)
 Optimized_total_tons = sum(all category tons using chosen optimization sliders)
 Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_total_tons × 100
-        </code>
-      </div>
+      </code>
     </div>
   </footer>
-
-  <!-- Drill-down modal -->
-  <div id="modal" class="modal">
-    <div class="dialog">
-      <h3 id="modalTitle">Category details</h3>
-      <div class="body" id="modalBody"></div>
-      <div class="footer">
-        <button id="modalClose" class="btn">Close</button>
-      </div>
-    </div>
-  </div>
 
   <script>
     // Theme toggle
@@ -355,10 +326,19 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       document.documentElement.setAttribute('data-theme', themeToggle.value);
     });
 
-    // Categories and colors
+    // Simple/Advanced toggle
+    let simpleMode = false;
+    const modeToggle = document.getElementById('modeToggle');
+    modeToggle.addEventListener('click', () => {
+      simpleMode = !simpleMode;
+      document.body.classList.toggle('simple-mode', simpleMode);
+      modeToggle.textContent = simpleMode ? 'Switch to Advanced Mode' : 'Switch to Simple Mode';
+    });
+
+    // Categories
     const categories = [
-      { key: 'Cars', label: 'Cars', color: '#22c55e' },
-      { key: 'Trucks', label: 'Trucks', color: '#60a5fa' },
+      { key: 'Cars', label: 'Cars', color: '#16a34a' },
+      { key: 'Trucks', label: 'Trucks', color: '#2563eb' },
       { key: 'Buses', label: 'Buses', color: '#f59e0b' },
       { key: 'Forklifts', label: 'Forklifts', color: '#a78bfa' },
       { key: 'Planes', label: 'Cargo Planes', color: '#ef4444' },
@@ -413,25 +393,18 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       insights: document.getElementById('insights'),
       scenarioChartCanvas: document.getElementById('scenarioChart'),
       badges: document.getElementById('badges'),
-      modal: document.getElementById('modal'),
-      modalTitle: document.getElementById('modalTitle'),
-      modalBody: document.getElementById('modalBody'),
-      modalClose: document.getElementById('modalClose'),
+      headlineInsight: document.getElementById('headlineInsight'),
     };
 
-    // Update slider labels
+    // Slider labels
     els.EV_share.addEventListener('input', () => els.EVShareLabel.textContent = `${els.EV_share.value}%`);
     els.KM_reduction.addEventListener('input', () => els.KMRedLabel.textContent = `${els.KM_reduction.value}%`);
     els.LoadFactor.addEventListener('input', () => els.LoadFactorLabel.textContent = `${els.LoadFactor.value}%`);
 
     // Validation helper
-    function numOrZero(v) {
-      const n = parseFloat(v);
-      if (isNaN(n) || n < 0) return 0;
-      return n;
-    }
+    function numOrZero(v) { const n = parseFloat(v); return (isNaN(n) || n < 0) ? 0 : n; }
 
-    // Exact formulas implementation
+    // Exact formulas
     function computeTons(params) {
       const {
         Cars_km, Trucks_km, Buses_km, Forklifts_hr, Planes_hr,
@@ -457,13 +430,12 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       };
     }
 
-    // Projection: apply annual growth to activity inputs for 5 years, return array of totals
+    // Projection (Advanced)
     function projectFiveYears(inputs, sliders) {
       const growth = numOrZero(els.annualGrowth.value) / 100;
       const years = [];
       let current = { ...inputs };
       for (let y = 1; y <= 5; y++) {
-        // Grow activity inputs uniformly
         const grown = {
           Cars_km: current.Cars_km * (1 + growth),
           Trucks_km: current.Trucks_km * (1 + growth),
@@ -474,7 +446,7 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
           Heating_kWhth: current.Heating_kWhth * (1 + growth),
           Cooling_kWh: current.Cooling_kWh * (1 + growth),
           Computing_kWh: current.Computing_kWh * (1 + growth),
-          Sub1: current.Sub1, Sub2: current.Sub2, Sub3: current.Sub3 // subs unchanged
+          Sub1: current.Sub1, Sub2: current.Sub2, Sub3: current.Sub3
         };
         const base = computeTons({ ...grown, EV_share: 0, KM_reduction: 0, LoadFactor: sliders.LoadFactor });
         const opt = computeTons({ ...grown, EV_share: sliders.EV_share, KM_reduction: sliders.KM_reduction, LoadFactor: sliders.LoadFactor });
@@ -486,7 +458,7 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       return years;
     }
 
-    // Build baseline and optimized, plus projection
+    // Calculate all
     function calculateAll() {
       const inputs = {
         Cars_km: numOrZero(els.Cars_km.value),
@@ -502,30 +474,16 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
         Sub2: numOrZero(els.Sub2.value),
         Sub3: numOrZero(els.Sub3.value),
       };
-
       const EV_share_opt = Math.min(100, Math.max(0, numOrZero(els.EV_share.value)));
       const KM_red_opt   = Math.min(100, Math.max(0, numOrZero(els.KM_reduction.value)));
       const LoadFactor   = Math.min(100, Math.max(0, numOrZero(els.LoadFactor.value)));
 
       const baseline = computeTons({
-        ...inputs,
-        EV_share: 0,
-        KM_reduction: 0,
-        LoadFactor: LoadFactor
+        ...inputs, EV_share: 0, KM_reduction: 0, LoadFactor
       });
       const optimized = computeTons({
-        ...inputs,
-        EV_share: EV_share_opt,
-        KM_reduction: KM_red_opt,
-        LoadFactor: LoadFactor
+        ...inputs, EV_share: EV_share_opt, KM_reduction: KM_red_opt, LoadFactor
       });
-
-      const planes_kg_opt = inputs.Planes_hr * 9000 * (LoadFactor/100);
-      const showWarn = planes_kg_opt > (50_000_000);
-      els.warning.style.display = showWarn ? 'block' : 'none';
-      if (showWarn) {
-        els.warning.textContent = `Warning: Cargo plane emissions are very large. Check inputs (Planes_hr, LoadFactor). Value: ${Math.round(planes_kg_opt).toLocaleString()} kg CO₂e.`;
-      }
 
       const rows = categories.map(cat => {
         const base = baseline[cat.key + '_tons'];
@@ -533,165 +491,124 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
         const diff = base - opt;
         return { category: cat.label, key: cat.key, base, opt, diff, color: cat.color };
       });
-
       const baselineTotal = rows.reduce((s, r) => s + r.base, 0);
       const optimizedTotal = rows.reduce((s, r) => s + r.opt, 0);
       const reductionPct = baselineTotal > 0 ? ((baselineTotal - optimizedTotal) / baselineTotal) * 100 : 0;
 
-      // Round display
+      // Warning for planes
+      const planes_kg_opt = inputs.Planes_hr * 9000 * (LoadFactor/100);
+      const showWarn = planes_kg_opt > (50_000_000);
+      els.warning.style.display = showWarn ? 'block' : 'none';
+      if (showWarn) {
+        els.warning.textContent = `Cargo plane emissions look very large. Check flight hours and load factor. (${Math.round(planes_kg_opt).toLocaleString()} kg)`;
+      }
+
+      // Round helper
       const r1 = (n) => Math.round(n * 10) / 10;
 
       // Metrics
       els.baselineTotal.textContent = r1(baselineTotal).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       els.optimizedTotal.textContent = r1(optimizedTotal).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-      const tagClass = reductionPct >= 0 ? 'tag good' : 'tag bad';
-      els.reductionTag.className = tagClass;
       els.reductionTag.textContent = `${r1(reductionPct)}%`;
+
+      // Headline insight (Simple Mode)
+      els.headlineInsight.textContent = `Your optimized plan reduces emissions by ${r1(reductionPct)}% versus baseline.`;
 
       // Pie
       const optValues = rows.map(r => Math.max(0, r1(r.opt)));
       const labels = rows.map(r => r.category);
-      updatePie(labels, optValues, rows.map(r => r.color), rows);
+      updatePie(labels, optValues, rows.map(r => r.color));
 
-      // Bar (baseline vs optimized)
+      // Bar
       updateBar(r1(baselineTotal), r1(optimizedTotal));
 
       // Legend
       renderLegend(rows);
 
-      // Badges
-      renderBadges({ EV_share_opt, KM_red_opt, LoadFactor, rows, reductionPct });
-
-      // Insights
-      renderInsights({ rows, baselineTotal, optimizedTotal, EV_share_opt, KM_red_opt, LoadFactor });
-
-      // Projection (optional)
-      const projectionEnabled = els.projectionToggle.checked;
-      let projection = null;
-      if (projectionEnabled) {
-        projection = projectFiveYears(inputs, { EV_share: EV_share_opt, KM_reduction: KM_red_opt, LoadFactor });
+      // Advanced: Badges + Insights + Projection + Scenario chart
+      if (!simpleMode) {
+        renderBadges({ EV_share_opt, KM_red_opt, LoadFactor, rows, reductionPct });
+        renderInsights({ rows, baselineTotal, optimizedTotal, EV_share_opt, KM_red_opt, LoadFactor });
+        const projectionEnabled = els.projectionToggle && els.projectionToggle.checked;
+        if (projectionEnabled) projectFiveYears(inputs, { EV_share: EV_share_opt, KM_reduction: KM_red_opt, LoadFactor });
+        updateScenarioChart();
+      } else {
+        els.badges.innerHTML = '';
+        els.insights.innerHTML = '';
       }
-      updateScenarioChart();
 
-      // Return structured data
-      return { rows, baselineTotal, optimizedTotal, reductionPct, projection };
+      return { rows, baselineTotal, optimizedTotal, reductionPct };
     }
 
     // Charts
     let pieChart, barChart, scenarioChart;
-
-    function updatePie(labels, data, colors, rows) {
+    function updatePie(labels, data, colors) {
       if (pieChart) pieChart.destroy();
       pieChart = new Chart(els.pieCanvas, {
         type: 'pie',
-        data: {
-          labels,
-          datasets: [{
-            data,
-            backgroundColor: colors,
-            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border'),
-            borderWidth: 1
-          }]
-        },
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border'), borderWidth: 1 }] },
         options: {
-          animation: { animateRotate: true, animateScale: true },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function(ctx) {
-                  const total = ctx.dataset.data.reduce((s, v) => s + v, 0);
-                  const val = ctx.parsed;
-                  const pct = total > 0 ? (val / total) * 100 : 0;
-                  return `${ctx.label}: ${val.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} t (${pct.toFixed(1)}%)`;
-                }
-              }
-            },
-            legend: { display: false }
-          },
-          onClick: (evt, elements) => {
-            if (elements.length > 0) {
-              const idx = elements[0].index;
-              const row = rows[idx];
-              openDrillDown(row);
-            }
-          }
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => {
+            const total = ctx.dataset.data.reduce((s,v)=>s+v,0);
+            const val = ctx.parsed;
+            const pct = total>0 ? (val/total)*100 : 0;
+            return `${ctx.label}: ${val.toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits:1})} t (${pct.toFixed(1)}%)`;
+          }}}},
+          animation: { animateRotate: true, animateScale: true }
         }
       });
     }
-
     function updateBar(baselineTotal, optimizedTotal) {
       if (barChart) barChart.destroy();
       barChart = new Chart(els.barCanvas, {
         type: 'bar',
         data: {
           labels: ['Baseline', 'Optimized'],
-          datasets: [{
-            label: 'Total tons CO₂e',
-            data: [baselineTotal, optimizedTotal],
-            backgroundColor: ['#60a5fa', '#22c55e'],
-            borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border'),
-            borderWidth: 1
-          }]
+          datasets: [{ label: 'Tons of emissions', data: [baselineTotal, optimizedTotal], backgroundColor: ['#2563eb', '#16a34a'] }]
         },
         options: {
-          animation: { duration: 500 },
+          plugins: { legend: { display: false } },
           scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--muted') },
-              grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') }
-            },
-            x: {
-              ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--muted') },
-              grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') }
-            }
+            y: { beginAtZero: true, grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') }},
+            x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') }}
           },
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true }
-          }
+          animation: { duration: 450 }
         }
       });
     }
 
-    // Scenario storage
-    const scenarios = []; // { name, baselineTotal, optimizedTotal, reductionPct, rows }
-
+    // Scenario storage (Advanced)
+    const scenarios = [];
     function saveScenario(current) {
       const name = els.scenarioName.value.trim() || `Scenario ${scenarios.length + 1}`;
       scenarios.push({
         name,
         baselineTotal: current.baselineTotal,
         optimizedTotal: current.optimizedTotal,
-        reductionPct: current.reductionPct,
-        rows: current.rows
+        reductionPct: current.reductionPct
       });
       renderScenarioList();
       updateScenarioChart();
       els.scenarioName.value = '';
     }
-
     function renderScenarioList() {
       els.scenarioList.innerHTML = '';
       scenarios.forEach((s, i) => {
         const el = document.createElement('div');
-        el.className = 'scenario';
-        el.innerHTML = `<span class="name">${s.name}</span><span>|</span><span>${(Math.round(s.reductionPct*10)/10)}%</span>`;
-        const del = document.createElement('button');
-        del.className = 'btn ghost';
-        del.textContent = 'Remove';
-        del.onclick = () => { scenarios.splice(i,1); renderScenarioList(); updateScenarioChart(); };
-        el.appendChild(del);
+        el.className = 'chip';
+        el.textContent = `${s.name}: ${Math.round(s.reductionPct*10)/10}%`;
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.style.marginLeft = '8px';
+        btn.textContent = 'Remove';
+        btn.onclick = () => { scenarios.splice(i,1); renderScenarioList(); updateScenarioChart(); };
+        el.appendChild(btn);
         els.scenarioList.appendChild(el);
       });
     }
-
     function updateScenarioChart() {
       if (scenarioChart) scenarioChart.destroy();
-      if (scenarios.length === 0) {
-        scenarioChart = new Chart(els.scenarioChartCanvas, { type: 'bar', data: { labels: [], datasets: [] }});
-        return;
-      }
+      if (scenarios.length === 0) return;
       const labels = scenarios.map(s => s.name);
       const baselineData = scenarios.map(s => Math.round(s.baselineTotal*10)/10);
       const optimizedData = scenarios.map(s => Math.round(s.optimizedTotal*10)/10);
@@ -700,66 +617,54 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
         data: {
           labels,
           datasets: [
-            { label: 'Baseline', data: baselineData, backgroundColor: '#60a5fa' },
-            { label: 'Optimized', data: optimizedData, backgroundColor: '#22c55e' }
+            { label: 'Baseline', data: baselineData, backgroundColor: '#2563eb' },
+            { label: 'Optimized', data: optimizedData, backgroundColor: '#16a34a' }
           ]
         },
-        options: {
-          animation: { duration: 500 },
-          scales: {
-            y: { beginAtZero: true, grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') } },
-            x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--border') } }
-          }
-        }
+        options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
       });
     }
 
-    // Insights generation
+    // Insights (Advanced)
     function renderInsights({ rows, baselineTotal, optimizedTotal, EV_share_opt, KM_red_opt, LoadFactor }) {
       els.insights.innerHTML = '';
       const add = (text) => {
         const div = document.createElement('div');
-        div.className = 'insight';
+        div.className = 'chip';
         div.textContent = text;
         els.insights.appendChild(div);
       };
-
       const cars = rows.find(r => r.key === 'Cars');
       const planes = rows.find(r => r.key === 'Planes');
-
       if (cars) {
         const base = cars.base, opt = cars.opt;
         const change = base > 0 ? ((base - opt) / base) * 100 : 0;
-        add(`EV share ${EV_share_opt}% and KM reduction ${KM_red_opt}% change car emissions by ${Math.round(change*10)/10}% from baseline.`);
+        add(`Cars: EV ${EV_share_opt}% + travel reduction ${KM_red_opt}% → ${Math.round(change*10)/10}% lower than baseline.`);
       }
       if (planes) {
-        const totalShare = optimizedTotal > 0 ? (planes.opt / optimizedTotal) * 100 : 0;
-        add(`Cargo planes contribute ${Math.round(totalShare*10)/10}% of optimized emissions at ${LoadFactor}% load factor.`);
+        const share = optimizedTotal > 0 ? (planes.opt / optimizedTotal) * 100 : 0;
+        add(`Planes: ${Math.round(share*10)/10}% of optimized total at ${LoadFactor}% load.`);
       }
       const topCat = [...rows].sort((a,b)=>b.opt - a.opt)[0];
-      if (topCat) add(`${topCat.category} is the largest optimized source at ${Math.round(topCat.opt)} tons.`);
-
-      const totalChange = baselineTotal > 0 ? ((baselineTotal - optimizedTotal) / baselineTotal) * 100 : 0;
-      add(`Overall reduction: ${Math.round(totalChange*10)/10}%.`);
+      if (topCat) add(`Largest source: ${topCat.category} (${Math.round(topCat.opt)} t).`);
     }
 
-    // Badges
+    // Badges (Advanced)
     function renderBadges({ EV_share_opt, KM_red_opt, LoadFactor, rows, reductionPct }) {
       els.badges.innerHTML = '';
-      const add = (text, type='good') => {
+      const add = (text) => {
         const b = document.createElement('span');
-        b.className = `chip ${type==='good'?'':'warn'}`;
+        b.className = 'chip';
         b.textContent = text;
         els.badges.appendChild(b);
       };
-      if (EV_share_opt >= 50) add('EV adoption ≥ 50% — strong progress');
-      if (KM_red_opt >= 20) add('Distance reduction ≥ 20% — efficiency gains');
-      const planesShare = (() => {
-        const planes = rows.find(r => r.key === 'Planes'); const total = rows.reduce((s,r)=>s+r.opt,0);
-        return total>0 ? (planes.opt/total)*100 : 0;
-      })();
-      if (planesShare > 30) add('Planes dominate — address air cargo efficiency', 'warn');
-      if (reductionPct >= 25) add('≥ 25% total reduction — impactful strategy');
+      if (EV_share_opt >= 50) add('EV adoption ≥ 50% — good momentum');
+      if (KM_red_opt >= 20) add('Travel reduction ≥ 20% — efficient');
+      const total = rows.reduce((s,r)=>s+r.opt,0);
+      const planes = rows.find(r => r.key === 'Planes');
+      const planesShare = total>0 && planes ? (planes.opt/total)*100 : 0;
+      if (planesShare > 30) add('Planes dominate — consider air cargo efficiency upgrades');
+      if (reductionPct >= 25) add('≥ 25% total reduction — impactful');
     }
 
     // Legend
@@ -779,43 +684,6 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       });
     }
 
-    // Drill-down modal
-    function openDrillDown(row) {
-      els.modalTitle.textContent = `${row.category} — details`;
-      const formulaMap = {
-        Cars: `cars_kg = Cars_km × 0.18 × (1 − 0.7 * EV_share/100) × (1 − KM_Reduction/100)\nCars_tons = cars_kg / 1000`,
-        Trucks: `Trucks_tons = (Trucks_km × 0.90) / 1000`,
-        Buses: `Buses_tons = (Buses_km × 1.10) / 1000`,
-        Forklifts: `Forklifts_tons = (Forklifts_hr × 4.0) / 1000`,
-        Planes: `Planes_tons = (Planes_hr × 9000 × LoadFactor/100) / 1000`,
-        Lighting: `Lighting_tons = (Lighting_kWh × 0.42) / 1000`,
-        Heating: `Heating_tons = (Heating_kWhth × 0.20) / 1000`,
-        Cooling: `Cooling_tons = (Cooling_kWh × 0.42) / 1000`,
-        Computing: `Computing_tons = (Computing_kWh × 0.42) / 1000`,
-        Subs: `Subs_tons = Sub1 + Sub2 + Sub3`,
-      };
-      els.modalBody.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <div style="background: var(--chip); border:1px solid var(--border); border-radius:8px; padding:8px;">
-            <div style="font-size:12px; color:var(--muted);">Baseline (tons)</div>
-            <div style="font-size:20px; font-weight:700;">${(Math.round(row.base*10)/10).toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits:1})}</div>
-          </div>
-          <div style="background: var(--chip); border:1px solid var(--border); border-radius:8px; padding:8px;">
-            <div style="font-size:12px; color:var(--muted);">Optimized (tons)</div>
-            <div style="font-size:20px; font-weight:700;">${(Math.round(row.opt*10)/10).toLocaleString(undefined,{minimumFractionDigits:1, maximumFractionDigits:1})}</div>
-          </div>
-        </div>
-        <div class="hr"></div>
-        <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">Formula</div>
-        <pre style="background: var(--chip); border:1px solid var(--border); border-radius:8px; padding:8px; white-space:pre-wrap;">${formulaMap[row.key]}</pre>
-        <div class="hr"></div>
-        <div style="font-size:12px; color:var(--muted);">Transparency: computed in kg then converted to tons.</div>
-      `;
-      els.modal.style.display = 'flex';
-    }
-    els.modalClose.addEventListener('click', () => els.modal.style.display = 'none');
-    els.modal.addEventListener('click', (e) => { if (e.target === els.modal) els.modal.style.display = 'none'; });
-
     // Buttons
     function loadSampleData() {
       const samples = {
@@ -824,17 +692,11 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
         Sub1: 80, Sub2: 40, Sub3: 30,
         EV_share: 30, KM_reduction: 10, LoadFactor: 60
       };
-      Object.entries(samples).forEach(([k, v]) => {
-        if (els[k]) els[k].value = v;
-      });
-      els.EV_share.value = samples.EV_share;
-      els.KM_reduction.value = samples.KM_reduction;
-      els.LoadFactor.value = samples.LoadFactor;
-      els.EVShareLabel.textContent = `${samples.EV_share}%`;
-      els.KMRedLabel.textContent = `${samples.KM_reduction}%`;
-      els.LoadFactorLabel.textContent = `${samples.LoadFactor}%`;
+      Object.entries(samples).forEach(([k, v]) => { if (els[k]) els[k].value = v; });
+      els.EV_share.value = samples.EV_share; els.EVShareLabel.textContent = `${samples.EV_share}%`;
+      els.KM_reduction.value = samples.KM_reduction; els.KMRedLabel.textContent = `${samples.KM_reduction}%`;
+      els.LoadFactor.value = samples.LoadFactor; els.LoadFactorLabel.textContent = `${samples.LoadFactor}%`;
     }
-
     function resetAll() {
       ['Cars_km','Trucks_km','Buses_km','Forklifts_hr','Planes_hr','Lighting_kWh','Heating_kWhth','Cooling_kWh','Computing_kWh','Sub1','Sub2','Sub3']
         .forEach(id => els[id].value = 0);
@@ -852,27 +714,25 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       els.insights.innerHTML = '';
       els.badges.innerHTML = '';
       scenarios.splice(0, scenarios.length);
-      renderScenarioList();
+      els.scenarioList.innerHTML = '';
     }
 
     els.btnSample.addEventListener('click', loadSampleData);
     els.btnReset.addEventListener('click', resetAll);
-    els.btnCalculate.addEventListener('click', () => {
-      const result = calculateAll();
-    });
-    els.btnCalculateTop.addEventListener('click', () => {
-      const result = calculateAll();
-    });
+    els.btnCalculate.addEventListener('click', () => calculateAll());
+    els.btnCalculateTop.addEventListener('click', () => calculateAll());
 
-    // Save scenario
-    els.btnSaveScenario.addEventListener('click', () => {
-      const { rows, baselineTotal, optimizedTotal, reductionPct } = calculateAll();
-      saveScenario({ rows, baselineTotal, optimizedTotal, reductionPct });
+    // Save/Clear scenario (Advanced)
+    const btnSaveScenario = document.getElementById('btnSaveScenario');
+    const btnClearScenarios = document.getElementById('btnClearScenarios');
+    if (btnSaveScenario) btnSaveScenario.addEventListener('click', () => {
+      const result = calculateAll();
+      saveScenario(result);
     });
-    els.btnClearScenarios.addEventListener('click', () => {
+    if (btnClearScenarios) btnClearScenarios.addEventListener('click', () => {
       scenarios.splice(0, scenarios.length);
-      renderScenarioList();
-      updateScenarioChart();
+      els.scenarioList.innerHTML = '';
+      if (scenarioChart) scenarioChart.destroy();
     });
 
     // Export screenshot
@@ -884,7 +744,7 @@ Percent_reduction = (Baseline_total_tons − Optimized_total_tons) / Baseline_to
       link.click();
     });
 
-    // Export CSV/JSON
+    // Export CSV/JSON (Advanced)
     function toCSV(rows) {
       const headers = ['Category','Baseline_tons','Optimized_tons','Diff_tons'];
       const lines = [headers.join(',')];
